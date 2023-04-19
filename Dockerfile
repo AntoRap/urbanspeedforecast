@@ -1,16 +1,21 @@
+# Using the Ubuntu image (our OS)
 FROM ubuntu:20.04
+# Update package manager (apt-get) 
+# and install (with the yes flag `-y`)
+# Python and Pip
+RUN apt-get update && apt-get install -y \
+    python3.7 \
+    python3-pip
 
-ARG DEBIAN_FRONTEND=noninteractive
+# =====
+# The new stuff is below
+# =====
 
-RUN apt-get update
+# Install our Python dependencies
+#RUN pip install Requests Pygments
+RUN pip install kafka-python
+# Copy our script into the container
+COPY kakfa_provaConsumer.py /kakfa_provaConsumer.py
 
-RUN apt-get install -y openssh-server curl nano
-
-USER root
-RUN mkdir /var/run/sshd
-RUN echo 'root:mypasswd' | chpasswd
-
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-CMD ["/usr/sbin/sshd", "-D"]
+# Run the script when the image is run
+ENTRYPOINT ["python3", "/kakfa_provaConsumer.py"]
